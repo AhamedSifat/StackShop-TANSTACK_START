@@ -2,9 +2,19 @@ import { Link, createFileRoute } from '@tanstack/react-router'
 import { ArrowRightIcon } from 'lucide-react'
 import { Card, CardDescription, CardTitle } from '@/components/ui/card'
 
-export const Route = createFileRoute('/')({ component: App })
+export const Route = createFileRoute('/')({
+  component: App,
+
+  loader: async () => {
+    // This runs on server during SSR AND on client during navigation
+    const response = await fetch('https://fakestoreapi.com/products')
+    const data = await response.json()
+    return { products: data }
+  },
+})
 
 function App() {
+  const { products } = Route.useLoaderData()
   return (
     <div className="space-y-12 bg-gradient-to-b from-slate-50 via-white to-slate-50 p-6">
       <section>
