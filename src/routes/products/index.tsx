@@ -17,7 +17,7 @@ export const Route = createFileRoute('/products/')({
   component: RouteComponent,
   loader: async () => {
     // This runs on server during SSR AND on client during navigation
-
+    // throw notFound()
     return fetchProducts()
   },
 })
