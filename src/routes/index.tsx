@@ -2,7 +2,6 @@ import { Link, createFileRoute } from '@tanstack/react-router'
 import { ArrowRightIcon } from 'lucide-react'
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
