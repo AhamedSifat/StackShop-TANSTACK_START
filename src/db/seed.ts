@@ -1,4 +1,6 @@
-export const sampleProducts = [
+import type { Product } from '@/type/product'
+
+export const sampleProducts: Array<Product> = [
   {
     name: 'TanStack Router Pro',
     description:

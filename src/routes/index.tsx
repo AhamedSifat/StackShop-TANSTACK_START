@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { sampleProducts } from '@/db/seed'
+import { ProductCard } from '@/components/ProductCard'
 
 export const Route = createFileRoute('/')({
   component: App,
@@ -70,14 +71,7 @@ function App() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
             {products.map((product, index) => (
-              <Card key={index}>
-                <CardHeader>
-                  <CardTitle>{product.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>{product.description}</CardDescription>
-                </CardContent>
-              </Card>
+              <ProductCard product={product} key={`product-${index}`} />
             ))}
           </div>
         </Card>
