@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { createServerFn } from '@tanstack/react-start'
+import { createMiddleware, createServerFn } from '@tanstack/react-start'
 import { ProductCard } from '@/components/ProductCard'
 import {
   Card,
@@ -8,6 +8,11 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { sampleProducts } from '@/db/seed'
+
+const loggingMiddleware = createMiddleware().server(({ next, request }) => {
+  console.log('---middleware---', request.url)
+  return next()
+})
 
 const fetchProducts = createServerFn({ method: 'GET' }).handler(async () => {
   // This runs only on the server
@@ -23,7 +28,7 @@ export const Route = createFileRoute('/products/')({
   },
 
   server: {
-    middleware: [],
+    middleware: [loggingMiddleware],
     handlers: {
       POST: async ({ request }) => {
         const body = await request.json()
