@@ -15,10 +15,21 @@ const fetchProducts = createServerFn({ method: 'GET' }).handler(async () => {
 })
 export const Route = createFileRoute('/products/')({
   component: RouteComponent,
+
   loader: async () => {
     // This runs on server during SSR AND on client during navigation
     // throw notFound()
     return fetchProducts()
+  },
+
+  server: {
+    middleware: [],
+    handlers: {
+      POST: async ({ request }) => {
+        const body = await request.json()
+        return new Response('Hello, World! from ' + request.url, body)
+      },
+    },
   },
 })
 
