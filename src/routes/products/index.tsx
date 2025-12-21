@@ -20,6 +20,7 @@ const fetchProducts = createServerFn({ method: 'GET' }).handler(async () => {
 })
 export const Route = createFileRoute('/products/')({
   component: RouteComponent,
+  ssr: true,
 
   loader: async () => {
     // This runs on server during SSR AND on client during navigation
