@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { createMiddleware, createServerFn } from '@tanstack/react-start'
 import { useQuery } from '@tanstack/react-query'
+import type { ProductSelect } from '@/db/schema'
 import { ProductCard } from '@/components/ProductCard'
 import {
   Card,
@@ -8,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { sampleProducts } from '@/db/seed'
 
 const loggingMiddleware = createMiddleware().server(({ next, request }) => {
   console.log('---middleware---', request.url)
@@ -17,7 +17,10 @@ const loggingMiddleware = createMiddleware().server(({ next, request }) => {
 
 const fetchProducts = createServerFn({ method: 'GET' }).handler(async () => {
   // This runs only on the server
-  return sampleProducts
+  const { getAllProducts } = await import('@/data/products')
+  const data = await getAllProducts()
+
+  return data
 })
 export const Route = createFileRoute('/products/')({
   component: RouteComponent,
@@ -72,8 +75,11 @@ function RouteComponent() {
       </section>
       <section>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {data.map((product, index) => (
-            <ProductCard key={`product-${index}`} product={product} />
+          {data?.map((product, index) => (
+            <ProductCard
+              key={`product-${index}`}
+              product={product as ProductSelect}
+            />
           ))}
         </div>
       </section>

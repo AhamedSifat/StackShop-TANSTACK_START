@@ -21,7 +21,7 @@ export function ProductCard({ product }: { product: ProductSelect }) {
   return (
     <Link
       to="/products/$id"
-      params={{ id: product.name }}
+      params={{ id: product.id }}
       className="cursor-pointer h-full transition hover:-translate-y-1 "
     >
       <Card className="px-2 py-4">
