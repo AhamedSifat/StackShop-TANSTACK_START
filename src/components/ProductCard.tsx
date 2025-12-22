@@ -9,10 +9,10 @@ import {
   CardHeader,
   CardTitle,
 } from './ui/card'
-import type { Product } from '@/type/product'
+import type { ProductSelect } from '@/db/schema'
 import { cn } from '@/lib/utils'
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product }: { product: ProductSelect }) {
   const inventoryTone = {
     'in-stock': 'bg-emerald-50 text-emerald-600 border-emerald-100',
     backorder: 'bg-amber-50 text-amber-700 border-amber-100',
@@ -48,7 +48,7 @@ export function ProductCard({ product }: { product: Product }) {
           <span
             className={cn(
               'rounded-full border px-3 py-1 text-xs font-semibold',
-              inventoryTone[product.inventory as keyof typeof inventoryTone],
+              inventoryTone[product.inventory],
             )}
           >
             {product.inventory === 'in-stock'

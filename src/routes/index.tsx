@@ -6,16 +6,17 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { sampleProducts } from '@/db/seed'
 import { ProductCard } from '@/components/ProductCard'
+import { getRecommendedProducts } from '@/data/products'
 
 export const Route = createFileRoute('/')({
   component: App,
 
   loader: async () => {
     // This runs on server during SSR AND on client during navigation
+    const products = await getRecommendedProducts()
 
-    return { products: sampleProducts }
+    return { products }
   },
 })
 
@@ -69,7 +70,7 @@ function App() {
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
-            {products.map((product, index) => (
+            {products?.map((product, index) => (
               <ProductCard product={product} key={`product-${index}`} />
             ))}
           </div>
