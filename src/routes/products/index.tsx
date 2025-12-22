@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { createMiddleware, createServerFn } from '@tanstack/react-start'
+import { useQuery } from '@tanstack/react-query'
 import { ProductCard } from '@/components/ProductCard'
 import {
   Card,
@@ -41,6 +42,11 @@ export const Route = createFileRoute('/products/')({
 
 function RouteComponent() {
   const products = Route.useLoaderData()
+  const { data } = useQuery({
+    queryKey: ['products'],
+    queryFn: () => fetchProducts(),
+    initialData: products,
+  })
 
   return (
     <div className="space-y-6">
@@ -66,7 +72,7 @@ function RouteComponent() {
       </section>
       <section>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {products.map((product, index) => (
+          {data.map((product, index) => (
             <ProductCard key={`product-${index}`} product={product} />
           ))}
         </div>
