@@ -1,4 +1,4 @@
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute, notFound } from '@tanstack/react-router'
 import { ArrowLeftIcon, ShoppingBagIcon, SparklesIcon } from 'lucide-react'
 import { getProductById } from '@/data/products'
 import {
@@ -15,7 +15,30 @@ export const Route = createFileRoute('/products/$id')({
   component: RouteComponent,
   loader: async ({ params }) => {
     const product = await getProductById(params.id)
+    if (!product) {
+      notFound()
+    }
     return product
+  },
+
+  head: ({ loaderData: product }) => {
+    if (!product) {
+      return {}
+    }
+    return {
+      meta: [
+        { name: 'description', content: product.description },
+        { name: 'image', content: product.image },
+        { name: 'title', content: product.name },
+
+        {
+          title: product.name,
+        },
+        {
+          description: product.description,
+        },
+      ],
+    }
   },
 })
 
