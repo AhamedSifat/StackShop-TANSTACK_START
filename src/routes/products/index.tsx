@@ -1,7 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { createMiddleware, createServerFn } from '@tanstack/react-start'
 import { useQuery } from '@tanstack/react-query'
-import type { ProductSelect } from '@/db/schema'
 import { ProductCard } from '@/components/ProductCard'
 import {
   Card,
@@ -24,8 +23,6 @@ const fetchProducts = createServerFn({ method: 'GET' }).handler(async () => {
 })
 export const Route = createFileRoute('/products/')({
   component: RouteComponent,
-  ssr: true,
-
   loader: async () => {
     // This runs on server during SSR AND on client during navigation
     // throw notFound()
@@ -76,10 +73,7 @@ function RouteComponent() {
       <section>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {data.map((product, index) => (
-            <ProductCard
-              key={`product-${index}`}
-              product={product as ProductSelect}
-            />
+            <ProductCard key={`product-${index}`} product={product} />
           ))}
         </div>
       </section>
