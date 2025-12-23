@@ -1,8 +1,8 @@
 import { Link, createFileRoute, notFound } from '@tanstack/react-router'
 import { ArrowLeftIcon, ShoppingBagIcon, SparklesIcon } from 'lucide-react'
 import { Suspense } from 'react'
+import { createServerFn } from '@tanstack/react-start'
 import type { ProductSelect } from '@/db/schema'
-import { getProductById, getRecommendedProducts } from '@/data/products'
 import {
   Card,
   CardContent,
@@ -15,12 +15,27 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { RecommendedProducts } from '@/components/RecommendedProducts'
 
+const fetchProductById = createServerFn({ method: 'POST' })
+  .inputValidator((data: { id: string }) => data)
+  .handler(async ({ data }) => {
+    const { getProductById } = await import('@/data/products')
+    const product = await getProductById(data.id)
+    return product
+  })
+
+const fetchRecommendedProducts = createServerFn({ method: 'GET' }).handler(
+  async () => {
+    const { getRecommendedProducts } = await import('@/data/products')
+    return getRecommendedProducts()
+  },
+)
+
 export const Route = createFileRoute('/products/$id')({
   component: RouteComponent,
 
   loader: async ({ params }) => {
-    const recommendedProducts = getRecommendedProducts()
-    const product = await getProductById(params.id)
+    const recommendedProducts = fetchRecommendedProducts()
+    const product = await fetchProductById({ data: { id: params.id } })
     if (!product) {
       throw notFound()
     }
