@@ -8,6 +8,7 @@ export const getRecommendedProducts = async () => {
     return productsData
   } catch (error) {
     console.log(error)
+    return []
   }
 }
 
@@ -17,6 +18,7 @@ export const getAllProducts = async () => {
     return productsData
   } catch (error) {
     console.log(error)
+    return []
   }
 }
 
@@ -29,5 +31,6 @@ export const getProductById = async (id: string) => {
     return productData[0]
   } catch (error) {
     console.log(error)
+    return undefined
   }
 }
