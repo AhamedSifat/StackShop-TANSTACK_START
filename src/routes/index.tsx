@@ -1,5 +1,6 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { ArrowRightIcon } from 'lucide-react'
+import { createServerFn } from '@tanstack/react-start'
 import {
   Card,
   CardDescription,
@@ -7,21 +8,24 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { ProductCard } from '@/components/ProductCard'
-import { getRecommendedProducts } from '@/data/products'
+
+const fetchProductsFn = createServerFn({ method: 'GET' }).handler(async () => {
+  const { getRecommendedProducts } = await import('@/data/products')
+  const products = await getRecommendedProducts()
+  return products
+})
 
 export const Route = createFileRoute('/')({
   component: App,
 
   loader: async () => {
     // This runs on server during SSR AND on client during navigation
-    const products = await getRecommendedProducts()
-
-    return { products }
+    return fetchProductsFn()
   },
 })
 
 function App() {
-  const { products } = Route.useLoaderData()
+  const products = Route.useLoaderData()
   return (
     <div className="space-y-12 bg-gradient-to-b from-slate-50 via-white to-slate-50 p-6">
       <section>
@@ -70,7 +74,7 @@ function App() {
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
-            {products?.map((product, index) => (
+            {products.map((product, index) => (
               <ProductCard product={product} key={`product-${index}`} />
             ))}
           </div>
