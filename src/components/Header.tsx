@@ -21,7 +21,7 @@ export default function Header() {
             <nav className="hidden items-center gap-3 text-sm font-medium text-slate-700 dark:text-slate-200 sm:flex">
               <Link to="/">Home</Link>
               <Link to="/products">Products</Link>
-              <Link to="/create-products">Create Products</Link>
+              <Link to="/products/create-products">Create Products</Link>
             </nav>
           </div>
           <div className="flex items-center gap-2">
