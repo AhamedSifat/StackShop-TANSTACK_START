@@ -1,8 +1,14 @@
 import { useForm } from '@tanstack/react-form'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
 import { z } from 'zod'
+import { createServerFn } from '@tanstack/react-start'
 import type { AnyFieldApi } from '@tanstack/react-form'
-import type { BadgeValue, InventoryValue } from '@/db/schema'
+import type {
+  BadgeValue,
+  InventoryValue,
+  ProductInsert,
+  ProductSelect,
+} from '@/db/schema'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import {
@@ -38,6 +44,30 @@ function FieldInfo({ field }: { field: AnyFieldApi }) {
   )
 }
 
+type CreateProductData = {
+  name: string
+  description: string
+  price: string
+  image: string
+  badge?: 'New' | 'Sale' | 'Featured' | 'Limited'
+  inventory: 'in-stock' | 'backorder' | 'preorder'
+}
+
+export const createProductFn = createServerFn({ method: 'POST' })
+  .inputValidator((data: CreateProductData) => data)
+  .handler(async ({ data }): Promise<ProductSelect> => {
+    const { createProduct: createProductInDb } = await import('@/data/products')
+    const productData: ProductInsert = {
+      name: data.name,
+      description: data.description,
+      price: data.price,
+      image: data.image,
+      badge: data.badge,
+      inventory: data.inventory,
+    }
+    return await createProductInDb(productData)
+  })
+
 export const Route = createFileRoute('/products/create-products')({
   component: RouteComponent,
 })
@@ -63,6 +93,7 @@ const createProductSchema = z.object({
 
 function RouteComponent() {
   const navigate = useNavigate()
+  const router = useRouter()
   const form = useForm({
     defaultValues: {
       name: '',
@@ -78,7 +109,24 @@ function RouteComponent() {
       onChange: createProductSchema,
     },
     onSubmit: async ({ value }) => {
-      console.log(value)
+      try {
+        await createProductFn({
+          data: {
+            name: value.name,
+            description: value.description,
+            price: value.price,
+            image: value.image,
+            badge: value.badge as BadgeValue,
+            inventory: value.inventory as InventoryValue,
+          },
+        })
+        router.invalidate({
+          sync: true,
+        })
+        navigate({ to: '/products' })
+      } catch (error) {
+        console.log(error)
+      }
     },
   })
 
