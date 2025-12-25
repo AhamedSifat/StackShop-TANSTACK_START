@@ -1,16 +1,29 @@
 import { Minus, Plus } from 'lucide-react'
 import { Link, createFileRoute } from '@tanstack/react-router'
+import { createServerFn } from '@tanstack/react-start'
 import { EmptyCartState } from '@/components/cart/EmptyCartState'
 import { Button } from '@/components/ui/button'
 
+const fetchCartItems = createServerFn({ method: 'GET' }).handler(async () => {
+  const { getCartItems } = await import('@/data/cart')
+  const data = await getCartItems()
+  return data
+})
+
 export const Route = createFileRoute('/cart')({
   component: RouteComponent,
+  loader: async () => {
+    return fetchCartItems()
+  },
 })
 
 function RouteComponent() {
-  const cart = { items: [] }
+  const cart = Route.useLoaderData()
   const shipping = cart.items.length > 0 ? 8 : 0
-  const subtotal = 0
+  const subtotal = cart.items.reduce(
+    (total, item) => total + Number(item.price) * item.quantity,
+    0,
+  )
   const total = subtotal + shipping
 
   if (cart.items.length === 0) {
