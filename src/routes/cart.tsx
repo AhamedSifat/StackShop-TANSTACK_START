@@ -5,8 +5,8 @@ import { EmptyCartState } from '@/components/cart/EmptyCartState'
 import { Button } from '@/components/ui/button'
 
 const fetchCartItems = createServerFn({ method: 'GET' }).handler(async () => {
-  const { getCartItems } = await import('@/data/cart')
-  const data = await getCartItems()
+  const { getCartItemsFn } = await import('@/data/cart')
+  const data = await getCartItemsFn()
   return data
 })
 
