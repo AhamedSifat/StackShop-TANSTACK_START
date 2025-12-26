@@ -1,7 +1,21 @@
 import { Link } from '@tanstack/react-router'
 import { ShoppingBag } from 'lucide-react'
+import { createServerFn } from '@tanstack/react-start'
+import { useQuery } from '@tanstack/react-query'
+
+const getCartItemsCountFn = createServerFn({ method: 'GET' }).handler(
+  async () => {
+    const { getCartItemsCount } = await import('@/data/cart')
+    const data = await getCartItemsCount()
+    return data
+  },
+)
 
 export default function Header() {
+  const { data: cartItemsCount } = useQuery({
+    queryKey: ['cart-items-count'],
+    queryFn: () => getCartItemsCountFn(),
+  })
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
@@ -31,10 +45,10 @@ export default function Header() {
             >
               <span>Cart</span>
               <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-900 px-2 text-[11px] font-bold text-white">
-                0
+                {cartItemsCount?.count as number}
               </span>
               <span className="hidden text-[11px] font-medium text-slate-500 sm:inline">
-                $10
+                ${cartItemsCount?.total.toFixed(2)}
               </span>
             </Link>
           </div>

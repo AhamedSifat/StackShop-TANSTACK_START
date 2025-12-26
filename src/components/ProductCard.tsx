@@ -1,5 +1,6 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useRouter } from '@tanstack/react-router'
 import { ShoppingBagIcon } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Button } from './ui/button'
 import {
   Card,
@@ -11,13 +12,18 @@ import {
 } from './ui/card'
 import type { ProductSelect } from '@/db/schema'
 import { cn } from '@/lib/utils'
+import { mutateCartFn } from '@/routes/cart'
 
 export function ProductCard({ product }: { product: ProductSelect }) {
+  const router = useRouter()
+  const queryClient = useQueryClient()
+
   const inventoryTone = {
     'in-stock': 'bg-emerald-50 text-emerald-600 border-emerald-100',
     backorder: 'bg-amber-50 text-amber-700 border-amber-100',
     preorder: 'bg-indigo-50 text-indigo-700 border-indigo-100',
   }
+
   return (
     <Link
       to="/products/$id"
@@ -66,9 +72,22 @@ export function ProductCard({ product }: { product: ProductSelect }) {
             size="sm"
             variant={'secondary'}
             className="bg-slate-900 text-white hover:bg-slate-800"
-            onClick={(e) => {
+            onClick={async (e) => {
               e.preventDefault()
               e.stopPropagation()
+              await mutateCartFn({
+                data: {
+                  action: 'add',
+                  productId: product.id,
+                  quantity: 1,
+                },
+              })
+              router.invalidate({
+                sync: true,
+              })
+              await queryClient.invalidateQueries({
+                queryKey: ['cart-items-count'],
+              })
             }}
           >
             <ShoppingBagIcon size={16} />

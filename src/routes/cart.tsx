@@ -1,6 +1,7 @@
 import { Minus, Plus } from 'lucide-react'
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
+import { useQueryClient } from '@tanstack/react-query'
 import { EmptyCartState } from '@/components/cart/EmptyCartState'
 import { Button } from '@/components/ui/button'
 
@@ -10,7 +11,7 @@ const fetchCartItems = createServerFn({ method: 'GET' }).handler(async () => {
   return data
 })
 
-const mutateCartFn = createServerFn({ method: 'POST' })
+export const mutateCartFn = createServerFn({ method: 'POST' })
   .inputValidator(
     (data: {
       action: 'add' | 'remove' | 'update' | 'clear'
@@ -40,6 +41,9 @@ export const Route = createFileRoute('/cart')({
 })
 
 function RouteComponent() {
+  const router = useRouter()
+  const queryClient = useQueryClient()
+
   const cart = Route.useLoaderData()
   const shipping = cart.items.length > 0 ? 8 : 0
   const subtotal = cart.items.reduce(
@@ -108,15 +112,21 @@ function RouteComponent() {
                     size="icon-sm"
                     variant="outline"
                     aria-label={`Decrease ${item.name}`}
-                    onClick={async () =>
+                    onClick={async () => {
                       await mutateCartFn({
                         data: {
                           action: 'update',
                           productId: item.id,
-                          quantity: item.quantity - 1,
+                          quantity: Number(item.quantity - 1),
                         },
                       })
-                    }
+                      router.invalidate({
+                        sync: true,
+                      })
+                      await queryClient.invalidateQueries({
+                        queryKey: ['cart-items-count'],
+                      })
+                    }}
                   >
                     <Minus size={14} />
                   </Button>
@@ -132,15 +142,22 @@ function RouteComponent() {
                     size="icon-sm"
                     variant="outline"
                     aria-label={`Increase ${item.name}`}
-                    onClick={async () =>
+                    onClick={async () => {
                       await mutateCartFn({
                         data: {
                           action: 'add',
                           productId: item.id,
-                          quantity: item.quantity + 1,
+                          quantity: 1,
                         },
                       })
-                    }
+                      router.invalidate({
+                        sync: true,
+                      })
+
+                      await queryClient.invalidateQueries({
+                        queryKey: ['cart-items-count'],
+                      })
+                    }}
                   >
                     <Plus size={14} />
                   </Button>

@@ -1,7 +1,13 @@
-import { Link, createFileRoute, notFound } from '@tanstack/react-router'
+import {
+  Link,
+  createFileRoute,
+  notFound,
+  useRouter,
+} from '@tanstack/react-router'
 import { ArrowLeftIcon, ShoppingBagIcon, SparklesIcon } from 'lucide-react'
 import { Suspense } from 'react'
 import { createServerFn } from '@tanstack/react-start'
+import { mutateCartFn } from '../cart'
 import type { ProductSelect } from '@/db/schema'
 import {
   Card,
@@ -65,6 +71,7 @@ export const Route = createFileRoute('/products/$id')({
 })
 
 function RouteComponent() {
+  const router = useRouter()
   const { product, recommendedProducts } = Route.useLoaderData()
 
   return (
@@ -126,7 +133,21 @@ function RouteComponent() {
               </CardContent>
               <CardFooter className="pt-0 flex items-center justify-between border-t-0 bg-transparent">
                 <div className="flex flex-wrap gap-3">
-                  <Button className="bg-slate-900 px-4 text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-white dark:text-slate-900">
+                  <Button
+                    onClick={async () => {
+                      await mutateCartFn({
+                        data: {
+                          action: 'add',
+                          productId: product.id,
+                          quantity: 1,
+                        },
+                      })
+                      router.invalidate({
+                        sync: true,
+                      })
+                    }}
+                    className="bg-slate-900 px-4 text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-white dark:text-slate-900"
+                  >
                     <ShoppingBagIcon size={16} />
                     Add to cart
                   </Button>

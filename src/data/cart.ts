@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { desc, eq } from 'drizzle-orm'
 import { db } from '@/db'
 import { cartItems, productsTable } from '@/db/schema'
 
@@ -7,6 +7,7 @@ export const getCartItemsFn = async () => {
     .select()
     .from(cartItems)
     .innerJoin(productsTable, eq(cartItems.productId, productsTable.id))
+    .orderBy(desc(cartItems.createdAt))
   return {
     items: cart.map((item) => ({
       ...item.products,
@@ -38,10 +39,31 @@ export const addToCart = async (productId: string, quantity: number) => {
 
 export const updateCartItem = async (productId: string, quantity: number) => {
   const qty = Math.max(1, Math.min(quantity, 99))
+
+  if (qty === 0) {
+    await db.delete(cartItems).where(eq(cartItems.productId, productId))
+    return
+  }
+
   await db
     .update(cartItems)
     .set({ quantity: qty })
     .where(eq(cartItems.productId, productId))
 
   return getCartItemsFn()
+}
+
+export const getCartItemsCount = async () => {
+  const cart = await getCartItemsFn()
+  const count = cart.items.reduce(
+    (acc: number, item) => acc + Number(item.quantity),
+    0,
+  )
+  return {
+    count,
+    total: cart.items.reduce(
+      (acc: number, item) => acc + Number(item.price) * Number(item.quantity),
+      0,
+    ),
+  }
 }
