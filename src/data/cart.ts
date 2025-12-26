@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm'
+import { createServerFn } from '@tanstack/react-start'
 import { db } from '@/db'
 import { cartItems, productsTable } from '@/db/schema'
-import { createServerFn } from '@tanstack/react-start'
 
 export const getCartItemsFn = async () => {
   const cart = await db
@@ -33,6 +33,18 @@ const addToCart = async (productId: string, quantity: number) => {
   } else {
     await db.insert(cartItems).values({ productId, quantity })
   }
+
+  return getCartItemsFn()
+}
+
+const updateCartItem = async (productId: string, quantity: number) => {
+  const qty = Math.max(1, Math.min(quantity, 99))
+  await db
+    .update(cartItems)
+    .set({ quantity: qty })
+    .where(eq(cartItems.productId, productId))
+
+  return getCartItemsFn()
 }
 
 export const mutateCartFn = createServerFn({ method: 'POST' })
@@ -50,7 +62,7 @@ export const mutateCartFn = createServerFn({ method: 'POST' })
       case 'remove':
         break
       case 'update':
-        break
+        return updateCartItem(data.productId, data.quantity)
       case 'clear':
         break
     }
