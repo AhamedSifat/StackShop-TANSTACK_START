@@ -1,5 +1,4 @@
 import { eq } from 'drizzle-orm'
-import { createServerFn } from '@tanstack/react-start'
 import { db } from '@/db'
 import { cartItems, productsTable } from '@/db/schema'
 
@@ -16,7 +15,7 @@ export const getCartItemsFn = async () => {
   }
 }
 
-const addToCart = async (productId: string, quantity: number) => {
+export const addToCart = async (productId: string, quantity: number) => {
   const qty = Math.max(1, Math.min(quantity, 99))
   const existingItem = await db
     .select()
@@ -37,7 +36,7 @@ const addToCart = async (productId: string, quantity: number) => {
   return getCartItemsFn()
 }
 
-const updateCartItem = async (productId: string, quantity: number) => {
+export const updateCartItem = async (productId: string, quantity: number) => {
   const qty = Math.max(1, Math.min(quantity, 99))
   await db
     .update(cartItems)
@@ -46,24 +45,3 @@ const updateCartItem = async (productId: string, quantity: number) => {
 
   return getCartItemsFn()
 }
-
-export const mutateCartFn = createServerFn({ method: 'POST' })
-  .inputValidator(
-    (data: {
-      action: 'add' | 'remove' | 'update' | 'clear'
-      productId: string
-      quantity: number
-    }) => data,
-  )
-  .handler(async ({ data }) => {
-    switch (data.action) {
-      case 'add':
-        return addToCart(data.productId, data.quantity)
-      case 'remove':
-        break
-      case 'update':
-        return updateCartItem(data.productId, data.quantity)
-      case 'clear':
-        break
-    }
-  })

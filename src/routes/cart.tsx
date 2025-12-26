@@ -10,6 +10,28 @@ const fetchCartItems = createServerFn({ method: 'GET' }).handler(async () => {
   return data
 })
 
+const mutateCartFn = createServerFn({ method: 'POST' })
+  .inputValidator(
+    (data: {
+      action: 'add' | 'remove' | 'update' | 'clear'
+      productId: string
+      quantity: number
+    }) => data,
+  )
+  .handler(async ({ data }) => {
+    const { addToCart, updateCartItem } = await import('@/data/cart')
+    switch (data.action) {
+      case 'add':
+        return await addToCart(data.productId, data.quantity)
+      case 'remove':
+        break
+      case 'update':
+        return await updateCartItem(data.productId, data.quantity)
+      case 'clear':
+        break
+    }
+  })
+
 export const Route = createFileRoute('/cart')({
   component: RouteComponent,
   loader: async () => {
@@ -86,7 +108,15 @@ function RouteComponent() {
                     size="icon-sm"
                     variant="outline"
                     aria-label={`Decrease ${item.name}`}
-                    onClick={() => {}}
+                    onClick={async () =>
+                      await mutateCartFn({
+                        data: {
+                          action: 'update',
+                          productId: item.id,
+                          quantity: item.quantity - 1,
+                        },
+                      })
+                    }
                   >
                     <Minus size={14} />
                   </Button>
@@ -102,7 +132,15 @@ function RouteComponent() {
                     size="icon-sm"
                     variant="outline"
                     aria-label={`Increase ${item.name}`}
-                    onClick={() => {}}
+                    onClick={async () =>
+                      await mutateCartFn({
+                        data: {
+                          action: 'add',
+                          productId: item.id,
+                          quantity: item.quantity + 1,
+                        },
+                      })
+                    }
                   >
                     <Plus size={14} />
                   </Button>
