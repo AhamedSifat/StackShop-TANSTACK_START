@@ -7,6 +7,7 @@ import {
 import { ArrowLeftIcon, ShoppingBagIcon, SparklesIcon } from 'lucide-react'
 import { Suspense } from 'react'
 import { createServerFn } from '@tanstack/react-start'
+import { useQueryClient } from '@tanstack/react-query'
 import { mutateCartFn } from '../cart'
 import type { ProductSelect } from '@/db/schema'
 import {
@@ -73,6 +74,7 @@ export const Route = createFileRoute('/products/$id')({
 function RouteComponent() {
   const router = useRouter()
   const { product, recommendedProducts } = Route.useLoaderData()
+  const queryClient = useQueryClient()
 
   return (
     <div>
@@ -142,8 +144,8 @@ function RouteComponent() {
                           quantity: 1,
                         },
                       })
-                      router.invalidate({
-                        sync: true,
+                      await queryClient.invalidateQueries({
+                        queryKey: ['cart-items-count'],
                       })
                     }}
                     className="bg-slate-900 px-4 text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-white dark:text-slate-900"

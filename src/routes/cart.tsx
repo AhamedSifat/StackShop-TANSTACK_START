@@ -4,10 +4,11 @@ import { createServerFn } from '@tanstack/react-start'
 import { useQueryClient } from '@tanstack/react-query'
 import { EmptyCartState } from '@/components/cart/EmptyCartState'
 import { Button } from '@/components/ui/button'
+import { CartFooter } from '@/components/cart/CartFooter'
 
 const fetchCartItems = createServerFn({ method: 'GET' }).handler(async () => {
-  const { getCartItemsFn } = await import('@/data/cart')
-  const data = await getCartItemsFn()
+  const { getCartItems } = await import('@/data/cart')
+  const data = getCartItems()
   return data
 })
 
@@ -15,21 +16,22 @@ export const mutateCartFn = createServerFn({ method: 'POST' })
   .inputValidator(
     (data: {
       action: 'add' | 'remove' | 'update' | 'clear'
-      productId: string
-      quantity: number
+      productId?: string
+      quantity?: number
     }) => data,
   )
   .handler(async ({ data }) => {
-    const { addToCart, updateCartItem } = await import('@/data/cart')
+    const { addToCart, removeFromCart, clearCart, updateCartItem } =
+      await import('@/data/cart')
     switch (data.action) {
       case 'add':
-        return await addToCart(data.productId, data.quantity)
+        return await addToCart(data.productId!, data.quantity!)
       case 'remove':
-        break
+        return await removeFromCart(data.productId!)
       case 'update':
-        return await updateCartItem(data.productId, data.quantity)
+        return await updateCartItem(data.productId!, data.quantity!)
       case 'clear':
-        break
+        return await clearCart()
     }
   })
 
@@ -66,7 +68,23 @@ function RouteComponent() {
               Review your picks before checking out.
             </p>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => {}}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={async () => {
+              await mutateCartFn({
+                data: {
+                  action: 'clear',
+                },
+              })
+              router.invalidate({
+                sync: true,
+              })
+              await queryClient.invalidateQueries({
+                queryKey: ['cart-items-count'],
+              })
+            }}
+          >
             Clear cart
           </Button>
         </div>
@@ -169,7 +187,20 @@ function RouteComponent() {
                   size="sm"
                   variant="ghost"
                   className="text-slate-500 hover:text-red-500"
-                  onClick={() => {}}
+                  onClick={async () => {
+                    await mutateCartFn({
+                      data: {
+                        action: 'remove',
+                        productId: item.id,
+                      },
+                    })
+                    router.invalidate({
+                      sync: true,
+                    })
+                    await queryClient.invalidateQueries({
+                      queryKey: ['cart-items-count'],
+                    })
+                  }}
                 >
                   Remove
                 </Button>
@@ -179,7 +210,7 @@ function RouteComponent() {
         </div>
       </div>
 
-      {/* <CartFooter subtotal={subtotal} shipping={shipping} total={total} /> */}
+      <CartFooter subtotal={subtotal} shipping={shipping} total={total} />
     </div>
   )
 }

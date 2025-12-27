@@ -1,8 +1,8 @@
-import { desc, eq } from 'drizzle-orm'
+import { and, desc, eq, gt } from 'drizzle-orm'
 import { db } from '@/db'
 import { cartItems, productsTable } from '@/db/schema'
 
-export const getCartItemsFn = async () => {
+export const getCartItems = async () => {
   const cart = await db
     .select()
     .from(cartItems)
@@ -34,11 +34,11 @@ export const addToCart = async (productId: string, quantity: number) => {
     await db.insert(cartItems).values({ productId, quantity })
   }
 
-  return getCartItemsFn()
+  return getCartItems()
 }
 
 export const updateCartItem = async (productId: string, quantity: number) => {
-  const qty = Math.max(1, Math.min(quantity, 99))
+  const qty = Math.max(0, Math.min(quantity, 99))
 
   if (qty === 0) {
     await db.delete(cartItems).where(eq(cartItems.productId, productId))
@@ -50,11 +50,19 @@ export const updateCartItem = async (productId: string, quantity: number) => {
     .set({ quantity: qty })
     .where(eq(cartItems.productId, productId))
 
-  return getCartItemsFn()
+  return getCartItems()
+}
+
+export const removeFromCart = async (productId: string) => {
+  await db.delete(cartItems).where(eq(cartItems.productId, productId))
+}
+
+export const clearCart = async () => {
+  await db.delete(cartItems).where(gt(cartItems.quantity, 0))
 }
 
 export const getCartItemsCount = async () => {
-  const cart = await getCartItemsFn()
+  const cart = await getCartItems()
   const count = cart.items.reduce(
     (acc: number, item) => acc + Number(item.quantity),
     0,
