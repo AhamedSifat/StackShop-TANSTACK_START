@@ -82,9 +82,7 @@ export function ProductCard({ product }: { product: ProductSelect }) {
                   quantity: 1,
                 },
               })
-              router.invalidate({
-                sync: true,
-              })
+
               await queryClient.invalidateQueries({
                 queryKey: ['cart-items-count'],
               })
